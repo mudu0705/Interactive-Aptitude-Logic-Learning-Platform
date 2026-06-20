@@ -1,0 +1,115 @@
+import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import api from '../services/api';
+import toast from 'react-hot-toast';
+import { Mail, Lock, User, UserPlus } from 'lucide-react';
+
+export const Signup: React.FC = () => {
+  const [name, setName] = React.useState('');
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
+  const navigate = useNavigate();
+
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name || !email || !password) {
+      return toast.error('Fill in all fields');
+    }
+
+    setLoading(true);
+    try {
+      const res = await api.post('/auth/register', { name, email, password });
+      if (res.data.success) {
+        const otpText = res.data.otp ? ` (Dev Mode OTP: ${res.data.otp})` : '';
+        toast.success(`Registration successful! Verification OTP sent to your email.${otpText}`);
+        navigate('/otp-verification', { state: { email, otp: res.data.otp } });
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Registration failed. Try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#070A13] flex items-center justify-center p-4 relative stars-bg">
+      <div className="absolute bottom-1/3 right-1/3 w-[250px] h-[250px] bg-brand-accent/5 rounded-full blur-[80px] pointer-events-none"></div>
+
+      <div className="w-full max-w-md p-8 rounded-2xl glass-panel relative z-10 space-y-6">
+        <div className="text-center space-y-2">
+          <Link to="/" className="text-3xl font-extrabold text-gradient">AptitudeAI</Link>
+          <p className="text-sm text-gray-400">Create an account to start placement drills</p>
+        </div>
+
+        <form onSubmit={handleSignup} className="space-y-4">
+          <div className="space-y-1">
+            <label className="text-xs font-semibold text-gray-400">Full Name</label>
+            <div className="relative">
+              <User size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
+              <input
+                type="text"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="John Doe"
+                className="w-full pl-11 pr-4 py-3 rounded-xl glass-input text-sm"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-xs font-semibold text-gray-400">Email Address</label>
+            <div className="relative">
+              <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@college.edu"
+                className="w-full pl-11 pr-4 py-3 rounded-xl glass-input text-sm"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-xs font-semibold text-gray-400">Password</label>
+            <div className="relative">
+              <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full pl-11 pr-4 py-3 rounded-xl glass-input text-sm"
+              />
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-3 bg-gradient-to-r from-brand-primary to-brand-secondary text-white font-bold rounded-xl hover:shadow-lg hover:shadow-brand-primary/25 transition-all text-sm flex items-center justify-center gap-2"
+          >
+            {loading ? (
+              <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+            ) : (
+              <>
+                <UserPlus size={16} /> Register
+              </>
+            )}
+          </button>
+        </form>
+
+        <div className="text-center text-xs text-gray-500">
+          Already have an account?{' '}
+          <Link to="/login" className="text-brand-primary font-semibold hover:underline">
+            Login here
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+};
