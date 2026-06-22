@@ -12,10 +12,13 @@ export interface CertificateMetadata {
 export const generateCertificateData = (
   userName: string,
   categoryName: string,
-  verificationHost: string = 'http://localhost:3000'
+  verificationHost: string = 'http://localhost:3000',
+  existingCertId?: string,
+  existingIssuedAt?: Date
 ): CertificateMetadata => {
-  const certificateId = crypto.randomUUID();
-  const dateStr = new Date().toLocaleDateString('en-US', {
+  const certificateId = existingCertId || crypto.randomUUID();
+  const dateObj = existingIssuedAt ? new Date(existingIssuedAt) : new Date();
+  const dateStr = dateObj.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -144,7 +147,7 @@ export const generateCertificateData = (
     certificateId,
     userName,
     categoryName,
-    issuedAt: new Date().toISOString(),
+    issuedAt: dateObj.toISOString(),
     qrCodeUrl,
     svgContent,
   };

@@ -529,6 +529,8 @@ export const claimCertificate = async (req: AuthRequest, res: Response, next: Ne
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
+    const host = `${req.protocol}://${req.get('host')}`;
+
     const existingCertificate = await prisma.certificate.findFirst({
       where: {
         userId,
@@ -537,14 +539,23 @@ export const claimCertificate = async (req: AuthRequest, res: Response, next: Ne
     });
 
     if (existingCertificate) {
+      const certDetails = generateCertificateData(
+        user.name,
+        existingCertificate.categoryName,
+        host,
+        existingCertificate.certificateId,
+        existingCertificate.issuedAt
+      );
+
       return res.json({
         success: true,
         message: 'Certificate already claimed',
-        certificate: existingCertificate,
+        certificate: {
+          ...existingCertificate,
+          svgContent: certDetails.svgContent,
+        },
       });
     }
-
-    const host = `${req.protocol}://${req.get('host')}`;
     const certDetails = generateCertificateData(user.name, category.name, host);
 
     const certificate = await prisma.certificate.create({

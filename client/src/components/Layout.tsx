@@ -1,20 +1,20 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
-import { 
-  LayoutDashboard, 
-  BookOpen, 
-  Gamepad, 
-  MessageSquare, 
-  Brain, 
-  FileText, 
-  UserCheck, 
-  Award, 
-  LogOut, 
-  Flame, 
-  Coins, 
-  Zap, 
-  Sun, 
+import {
+  LayoutDashboard,
+  BookOpen,
+  Gamepad,
+  MessageSquare,
+  Brain,
+  FileText,
+  UserCheck,
+  Award,
+  LogOut,
+  Flame,
+  Coins,
+  Zap,
+  Sun,
   Moon,
   Menu,
   X,
@@ -52,7 +52,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-[#070A13] overflow-x-hidden stars-bg text-gray-100">
-      
+
       {/* Mobile Header Bar */}
       <header className="md:hidden flex items-center justify-between p-4 bg-[#0D111E]/80 backdrop-blur-md border-b border-white/5 z-50">
         <div className="flex items-center gap-2">
@@ -86,16 +86,15 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
               <Link
                 key={item.name}
                 to={item.path}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative ${
-                  isActive 
-                    ? 'bg-brand-primary/10 border border-brand-primary/25 text-white font-medium' 
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative ${isActive
+                    ? 'bg-brand-primary/10 border border-brand-primary/25 text-white font-medium'
                     : 'text-gray-400 hover:bg-white/5 hover:text-white border border-transparent'
-                }`}
+                  }`}
               >
                 <Icon size={18} className={isActive ? 'text-brand-primary' : 'text-gray-400 group-hover:text-brand-primary transition-colors'} />
                 <span>{item.name}</span>
                 {isActive && (
-                  <motion.div 
+                  <motion.div
                     layoutId="sidebar-active"
                     className="absolute left-0 w-1 h-6 bg-brand-primary rounded-r-md"
                   />
@@ -131,7 +130,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       {/* Mobile Slide-out Menu Panel */}
       <AnimatePresence>
         {mobileMenuOpen && (
-          <motion.div 
+          <motion.div
             initial={{ x: '-100%' }}
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
@@ -147,9 +146,8 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                     key={item.name}
                     to={item.path}
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-xl ${
-                      isActive ? 'bg-brand-primary/20 text-white border border-brand-primary/30' : 'text-gray-400'
-                    }`}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl ${isActive ? 'bg-brand-primary/20 text-white border border-brand-primary/30' : 'text-gray-400'
+                      }`}
                   >
                     <Icon size={20} className={isActive ? 'text-brand-primary' : 'text-gray-400'} />
                     <span className="text-base">{item.name}</span>
@@ -177,7 +175,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
-        
+
         {/* Top Navbar Dashboard Widgets (Desktop) */}
         {user && (
           <header className="hidden md:flex items-center justify-between px-8 py-4 bg-[#0A0D18]/30 border-b border-white/5 z-30">
@@ -223,8 +221,8 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
               </div>
 
               {/* Theme toggle */}
-              <button 
-                onClick={toggleTheme} 
+              <button
+                onClick={toggleTheme}
                 className="p-2 bg-white/5 rounded-full border border-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all"
               >
                 {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
