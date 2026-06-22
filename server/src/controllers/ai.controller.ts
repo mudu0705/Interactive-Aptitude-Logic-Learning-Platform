@@ -3,7 +3,7 @@ import multer from 'multer';
 import pdfParse from 'pdf-parse';
 import prisma from '../services/db.service';
 import { AuthRequest } from '../middlewares/auth.middleware';
-import { explainConcept, generateInterviewFeedback, generateAIQuestion } from '../services/ai.service';
+import { explainConcept, generateInterviewFeedback, generateAIQuestion, generateNextInterviewQuestion } from '../services/ai.service';
 import { analyzeResumeText } from '../services/ats.service';
 
 // Multer memory storage configuration for file uploads
@@ -127,28 +127,8 @@ export const respondMockInterview = async (req: AuthRequest, res: Response, next
 
     interviewHistories[userId].push({ sender: 'USER', text: message });
 
-    // Generate next interview question dynamically
-    const nextQuestionPrompt = `You are conducting a professional technical job interview for the company ${company}.
-    The interview transcript so far:
-    ${interviewHistories[userId].map(h => `${h.sender}: ${h.text}`).join('\n')}
-    
-    Ask the candidate the next logical question. Keep it to 1 short question (e.g. follow up on their project, ask about DSA, or a logic puzzle). Do not say anything else.`;
-
-    const fallbackQuestions = [
-      'That sounds interesting. Can you tell me about the database structure you chose for your main project and why?',
-      'How would you design a system to handle high concurrency in a login flow?',
-      'Can you explain the difference between processes and threads in an operating system?',
-      'Thank you. We have completed the technical portion. Feel free to conclude when you are ready to receive your report.'
-    ];
-
-    const currentTurn = interviewHistories[userId].filter(h => h.sender === 'USER').length;
-    const fallbackQ = fallbackQuestions[currentTurn - 1] || fallbackQuestions[fallbackQuestions.length - 1];
-
-    // Import callGemini or invoke explainConcept logic directly
-    // Let's use a smart mock call that requests the next conversational hook
-    const explanation = await explainConcept(`${company} Interview`, nextQuestionPrompt);
-    const lines = explanation.split('\n').filter(l => l.trim().length > 0 && !l.includes('###') && !l.includes('*'));
-    const nextQuestion = lines[0] || fallbackQ;
+    // Generate next interview question dynamically using Gemini
+    const nextQuestion = await generateNextInterviewQuestion(company, interviewHistories[userId]);
 
     interviewHistories[userId].push({ sender: 'AI', text: nextQuestion });
 

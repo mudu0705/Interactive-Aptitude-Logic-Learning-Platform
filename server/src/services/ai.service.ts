@@ -194,3 +194,27 @@ export const assignQuestionMetadata = async (
   }
 };
 
+export const generateNextInterviewQuestion = async (
+  company: string,
+  history: { sender: 'AI' | 'USER'; text: string }[]
+): Promise<string> => {
+  const transcript = history.map((h) => `${h.sender}: ${h.text}`).join('\n');
+  const prompt = `You are a professional technical interviewer conducting an interview for the company ${company}.
+Here is the transcript of the interview so far:
+${transcript}
+
+Ask the candidate the next logical question. It could be a follow-up on their project, a DSA question, or a logic puzzle.
+Respond with ONLY the next interview question. Do not include any introductory phrases, markdown formatting, or extra conversational filler. Just the raw question.`;
+
+  const fallbackQuestions = [
+    'That sounds interesting. Can you tell me about the database structure you chose for your main project and why?',
+    'How would you design a system to handle high concurrency in a login flow?',
+    'Can you explain the difference between processes and threads in an operating system?',
+    'Thank you. We have completed the technical portion. Feel free to conclude when you are ready to receive your report.'
+  ];
+  const currentTurn = history.filter(h => h.sender === 'USER').length;
+  const fallback = fallbackQuestions[currentTurn - 1] || fallbackQuestions[fallbackQuestions.length - 1];
+
+  return callGemini(prompt, fallback);
+};
+
