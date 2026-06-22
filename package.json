@@ -22,6 +22,7 @@
     "prisma:seed": "npm --workspace=server run prisma:seed"
   },
   "devDependencies": {
+    "@railway/cli": "^5.20.0",
     "concurrently": "^8.2.2"
   }
 }

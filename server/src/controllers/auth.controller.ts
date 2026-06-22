@@ -22,18 +22,14 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
     }
 
     const passwordHash = await bcrypt.hash(data.password, 10);
-    const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6 digit OTP
-    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
 
-    // Create user and profile
+    // Create user and profile (auto-verified)
     const user = await prisma.user.create({
       data: {
         email: data.email,
         passwordHash,
         name: data.name,
-        otpCode: otp,
-        otpExpiry,
-        otpLastSent: new Date(),
+        isVerified: true,
         profile: {
           create: {
             xp: 0,
@@ -50,14 +46,35 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
       },
     });
 
-    // Send the email OTP using Nodemailer service
-    await sendOtpEmail(user.email, user.name, otp);
+    const accessToken = jwt.sign(
+      { userId: user.id, email: user.email, role: user.role },
+      JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    const refreshToken = jwt.sign(
+      { userId: user.id },
+      JWT_REFRESH_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    const targetCompanies = user.profile ? JSON.parse(user.profile.targetCompanies) : [];
 
     return res.status(201).json({
       success: true,
-      message: 'Registration successful. Verification OTP sent to your email.',
-      userId: user.id,
-      otp: process.env.NODE_ENV !== 'production' ? otp : undefined,
+      message: 'Registration successful.',
+      accessToken,
+      refreshToken,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        profile: user.profile ? {
+          ...user.profile,
+          targetCompanies,
+        } : null,
+      },
     });
   } catch (error) {
     next(error);
@@ -80,15 +97,6 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     const isMatch = await bcrypt.compare(data.password, user.passwordHash);
     if (!isMatch) {
       return res.status(400).json({ success: false, message: 'Invalid email or password' });
-    }
-
-    if (!user.isVerified) {
-      return res.status(403).json({
-        success: false,
-        message: 'Account not verified. Please verify your email first.',
-        isVerified: false,
-        otp: process.env.NODE_ENV !== 'production' ? user.otpCode : undefined,
-      });
     }
 
     const accessToken = jwt.sign(

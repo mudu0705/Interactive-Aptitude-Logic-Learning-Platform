@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useStore } from '../store/useStore';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import { Mail, Lock, User, UserPlus } from 'lucide-react';
@@ -9,6 +10,7 @@ export const Signup: React.FC = () => {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [loading, setLoading] = React.useState(false);
+  const { setAuth } = useStore();
   const navigate = useNavigate();
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -21,9 +23,22 @@ export const Signup: React.FC = () => {
     try {
       const res = await api.post('/auth/register', { name, email, password });
       if (res.data.success) {
-        const otpText = res.data.otp ? ` (Dev Mode OTP: ${res.data.otp})` : '';
-        toast.success(`Registration successful! Verification OTP sent to your email.${otpText}`);
-        navigate('/otp-verification', { state: { email, otp: res.data.otp } });
+        toast.success(`Welcome, ${res.data.user.name}! Account created successfully.`);
+        setAuth({
+          id: res.data.user.id,
+          email: res.data.user.email,
+          name: res.data.user.name,
+          role: res.data.user.role,
+          xp: res.data.user.profile.xp,
+          coins: res.data.user.profile.coins,
+          level: res.data.user.profile.level,
+          streak: res.data.user.profile.streak,
+          dailyGoalXP: res.data.user.profile.dailyGoalXP,
+          college: res.data.user.profile.college || undefined,
+          targetCompanies: res.data.user.profile.targetCompanies || [],
+          readinessScore: res.data.user.profile.readinessScore || 0,
+        }, res.data.accessToken, res.data.refreshToken);
+        navigate('/dashboard');
       }
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Registration failed. Try again.');
