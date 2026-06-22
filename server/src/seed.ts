@@ -35,6 +35,12 @@ function getUUID(): string {
 }
 
 async function main() {
+  const existingQuestions = await prisma.question.count();
+  if (existingQuestions > 0) {
+    console.log('Database already contains questions. Skipping seed to prevent data overwrite.');
+    return;
+  }
+
   console.log('--- STARTING MASSIVE MCQ SEED GENERATOR (10,000+ MCQs) ---');
 
   // 1. Delete all existing data to prevent SQLite constraint failures or duplicate data
