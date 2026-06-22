@@ -2,6 +2,8 @@
 
 A production-ready, full-stack, AI-powered web application built as a Computer Science & Engineering Final Year Major Project.
 
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new?template=https://github.com/mudu0705/Interactive-Aptitude-Logic-Learning-Platform)
+
 ---
 
 ## Technical Stack
